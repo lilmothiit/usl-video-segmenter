@@ -55,6 +55,4 @@ class ProjectConfig:
     VIDEO_CODEC = 'mp4v'
 
 
-
-
 CONFIG = ProjectConfig()

@@ -1,6 +1,7 @@
 from config.config import CONFIG
 from util.global_logger import GLOBAL_LOGGER as LOG
 from util.path_resolver import PATH_RESOLVER as REPATH
+from util.shutdown import shutdown
 from app.segmenter import segment_video
 
 
@@ -28,6 +29,9 @@ def main():
 
         if limiter_counter >= CONFIG.VIDEO_PROCESSING_LIMIT:
             break
+
+    if CONFIG.SYSTEM_SHUTDOWN_ON_END:
+        shutdown()
 
 
 if __name__ == "__main__":

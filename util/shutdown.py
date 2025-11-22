@@ -13,4 +13,4 @@ def shutdown():
     elif current_os == "Linux" or current_os == "Darwin":
         os.system("sudo shutdown -h now")
     else:
-        print(f"Unsupported operating system: {current_os}. Shutdown aborted.")
+        LOG.info(f"Unsupported operating system: {current_os}. Shutdown aborted.")
