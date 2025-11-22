@@ -1,0 +1,10 @@
+# task file
+data
+model
+logs
+
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
