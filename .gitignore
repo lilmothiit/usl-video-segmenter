@@ -2,6 +2,7 @@
 data
 model
 logs
+tools
 
 # IntelliJ project files
 .idea
