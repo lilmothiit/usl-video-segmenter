@@ -1,7 +1,6 @@
 import cv2
 import mediapipe as mp
 
-from collections import deque
 from pathlib import Path
 from mediapipe.tasks.python.vision import PoseLandmarkerOptions, PoseLandmarker
 
@@ -53,11 +52,11 @@ def estimate_pose(estimator, image, image_msec):
     return hands_detected
 
 
-def segment_video(input_video : Path, output_dir : Path) -> None:
+def segment_video(input_video : Path) -> list[tuple]:
     """
-    Process input video file with PoseLandmarker and save video segments.\
+    Process input video file with PoseLandmarker and save video segments.
     :param input_video: path to input video file
-    :param output_dir: path to output directory
+    :return: list of tuples with (start, end) seconds
     """
 
     # estimator is created per video
@@ -67,27 +66,22 @@ def segment_video(input_video : Path, output_dir : Path) -> None:
     in_vid = cv2.VideoCapture(str(input_video))
 
     if not in_vid.isOpened():
-        LOG.error(f"Unknown error opening video file {input_video}")
-        return
+        LOG.error(f"Unknown error opening video file")
+        return []
 
-    segment_count = 0
     frame_count = 0
     total_frames = int(in_vid.get(cv2.CAP_PROP_FRAME_COUNT))
 
     if not total_frames or total_frames <= 0:
-        LOG.error(f"Error opening video file {input_video}: Frame count is equal to or less than 0")
-        return
+        LOG.error(f"Error opening video file: Frame count is equal to or less than 0")
+        return []
 
     video_fps = in_vid.get(cv2.CAP_PROP_FPS)
     frame_step = int(video_fps / CONFIG.POSE_ESTIMATE_FPS)
     LOG.debug(f'Video FPS: {video_fps}, Estimation FPS: {CONFIG.POSE_ESTIMATE_FPS}, Frame step: {frame_step}')
 
-    # pre_pad = int(video_fps * CONFIG.PRE_PADDING_SECONDS)
-    # post_pad = int(video_fps * CONFIG.POST_PADDING_SECONDS)
-    # pre_buffer = deque(maxlen=pre_pad)
-    # post_pad_counter = 0
-
-    writer = None
+    segments = []
+    segment_start = None
 
     while in_vid.isOpened():
         success, image = in_vid.read()
@@ -95,10 +89,6 @@ def segment_video(input_video : Path, output_dir : Path) -> None:
         if not success:
             LOG.info("Reached end of video")
             break
-
-        if writer is not None:
-            # Write the current frame into the open segment
-            writer.write(image)
 
         frame_count += 1
         if frame_count % frame_step == 0:
@@ -109,26 +99,20 @@ def segment_video(input_video : Path, output_dir : Path) -> None:
         pose_detected = estimate_pose(_POSE_ESTIMATOR, image, int(in_vid.get(cv2.CAP_PROP_POS_MSEC)))
 
         if pose_detected:
-            # Start a new segment if none is currently open
-            if writer is None:
-                segment_out = output_dir / f"{segment_count:04d}{CONFIG.VIDEO_EXTENSION}"
-
-                fourcc = cv2.VideoWriter.fourcc(*CONFIG.VIDEO_CODEC)
-                width = int(in_vid.get(cv2.CAP_PROP_FRAME_WIDTH))
-                height = int(in_vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-                writer = cv2.VideoWriter(str(segment_out), fourcc, video_fps, (width, height))
-                LOG.info(f"Starting new segment #{segment_count:04d} at {segment_out}")
-
-                writer.write(image)
-
+            if segment_start is None:
+                segment_start = frame_count
         else:
-            # End the segment if one is open
-            if writer is not None:
-                writer.release()
-                writer = None
-                LOG.info(f"Closed segment #{segment_count:04d}")
-                segment_count += 1
+            if segment_start is not None:
+                start_time = segment_start / video_fps - CONFIG.PRE_PADDING_SECONDS
+                end_time = frame_count / video_fps + CONFIG.POST_PADDING_SECONDS
+
+                segments.append((start_time, end_time))
+                LOG.info(f'Segment {len(segments):04d}: {start_time:.2f}-{end_time:.2f}, '
+                         f'total {end_time-start_time:.2f} seconds')
+                segment_start = None
+
+        if len(segments) >= CONFIG.VIDEO_SEGMENT_LIMIT:
+            break
 
     in_vid.release()
-    return
+    return segments

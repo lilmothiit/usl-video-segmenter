@@ -2,7 +2,9 @@ from config.config import CONFIG
 from util.global_logger import GLOBAL_LOGGER as LOG
 from util.path_resolver import PATH_RESOLVER as REPATH
 from util.shutdown import shutdown
+
 from app.segmenter import segment_video
+from app.ffmpeg_writer import save_segments
 
 
 def main():
@@ -21,12 +23,13 @@ def main():
 
         video_name = item.name
         video_id = video_name.split(" - ")[0]
-        video_path = REPATH.SEGMENTS_DIR / video_id
-        video_path.mkdir(parents=True, exist_ok=True)
+        video_out_path = REPATH.SEGMENTS_DIR / video_id
+        video_out_path.mkdir(parents=True, exist_ok=True)
 
-        segment_video(item, video_path)
+        segments = segment_video(item)
+        save_segments(item, segments, video_out_path)
+
         limiter_counter += 1
-
         if limiter_counter >= CONFIG.VIDEO_PROCESSING_LIMIT:
             break
 

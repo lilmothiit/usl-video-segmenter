@@ -16,21 +16,25 @@ class ProjectConfig:
     # REQUESTS_PER_SECOND = 5
     # DOWNLOAD_SPEED = 5_000_000  # bits/sec
 
-    # -----------------------------------------------------  Files  ----------------------------------------------------
-    DOWNLOAD_PATH = 'D:/projects/usl-videos/Суспільне Студія'
-    SEGMENTS_PATH = 'D:/projects/video-segmenter/data'
+    # -----------------------------------------------------  Paths  ----------------------------------------------------
+    DOWNLOAD_PATH = 'data/Суспільне Студія'
+    SEGMENTS_PATH = 'data/segments'
+    PERSISTENCE_PATH = 'data/persistence'
+    FFMPEG_PATH = 'tools/ffmpeg.exe'
+    POSE_TASK_PATH = 'model/pose_landmarker_lite.task'
 
     # ----------------------------------------------------  System  ----------------------------------------------------
     SYSTEM_SHUTDOWN_ON_END = False
 
     # ===============================================  VIDEO PROCESSING  ===============================================
     VIDEO_PROCESSING_LIMIT = 1
+    VIDEO_SEGMENT_LIMIT = 10
 
     # ------------------------------------------------  Pose Estimation  -----------------------------------------------
     POSE_ESTIMATE_FPS = 12
     POSE_ESTIMATION_OPTIONS = {
         'base_options': BaseOptions(
-            model_asset_path='model/pose_landmarker_heavy.task'),
+            model_asset_path=POSE_TASK_PATH),
         'running_mode': VisionTaskRunningMode.VIDEO,
         'num_poses': 1,
         'min_pose_detection_confidence': 0.5,
@@ -44,15 +48,12 @@ class ProjectConfig:
     POSE_LANDMARK_PRESENCE_CRITERIA = 0.8
 
     # ------------------------------------------------  Video Handling  ------------------------------------------------
-    # PRE_PADDING_SECONDS = 5
-    # POST_PADDING_SECONDS = 5
+    PRE_PADDING_SECONDS = 2.0
+    POST_PADDING_SECONDS = 0.5
 
     ROI_WIDTH = 0.25
     ROI_HEIGHT = 0.45
     ROI_CORNER = 'bottom_right'     # one of ["top_left", "top_right", "bottom_left", "bottom_right"]
-
-    VIDEO_EXTENSION = '.mkv'        # mkv supports almost any codec, mp4 needs mp4v, webm needs vp80/vp90
-    VIDEO_CODEC = 'mp4v'
 
 
 CONFIG = ProjectConfig()
