@@ -1,4 +1,7 @@
+from sys import meta_path
+
 import cv2
+import json
 import mediapipe as mp
 
 from pathlib import Path
@@ -52,10 +55,12 @@ def estimate_pose(estimator, image, image_msec):
     return hands_detected
 
 
-def segment_video(input_video : Path) -> list[tuple]:
+def pose_estimation_segmentation(input_video: Path, known_segments: list[tuple[float, float]]) \
+        -> list[tuple[float, float]]:
     """
     Process input video file with PoseLandmarker and save video segments.
     :param input_video: path to input video file
+    :param known_segments: list of known segments
     :return: list of tuples with (start, end) seconds
     """
 
@@ -80,8 +85,12 @@ def segment_video(input_video : Path) -> list[tuple]:
     frame_step = int(video_fps / CONFIG.POSE_ESTIMATE_FPS)
     LOG.debug(f'Video FPS: {video_fps}, Estimation FPS: {CONFIG.POSE_ESTIMATE_FPS}, Frame step: {frame_step}')
 
-    segments = []
+    segments = known_segments
     segment_start = None
+
+    if segments:
+        last_segment_end = int(segments[-1][1] * 1000)
+        in_vid.set(cv2.CAP_PROP_POS_MSEC, last_segment_end)
 
     while in_vid.isOpened():
         success, image = in_vid.read()
@@ -116,3 +125,32 @@ def segment_video(input_video : Path) -> list[tuple]:
 
     in_vid.release()
     return segments
+
+
+def save_segments(segments_path: Path, segments: list[tuple[float, float]]) -> None:
+    meta_path = segments_path / '.meta'
+    json_ready = [[s, e] for (s, e) in segments]
+
+    with meta_path.open("w", encoding="utf-8") as f:
+        json.dump(json_ready, f, indent=2)
+
+
+def load_segments(segments_path: Path) -> list[tuple[float, float]]:
+    meta_path = segments_path / '.meta'
+
+    if not meta_path.exists():
+        return []
+
+    with meta_path.open("r", encoding="utf-8") as f:
+        raw = json.load(f)
+
+    return [(float(s), float(e)) for s, e in raw]
+
+
+def segment_video(input_video: Path, output_path : Path) -> list[tuple[float, float]]:
+    segments = load_segments(output_path)
+    segments = pose_estimation_segmentation(input_video, segments)
+    save_segments(output_path, segments)
+    return segments
+
+
