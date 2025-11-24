@@ -5,7 +5,9 @@ import json
 import mediapipe as mp
 
 from pathlib import Path
-from mediapipe.tasks.python.vision import PoseLandmarkerOptions, PoseLandmarker
+
+from keras.src.legacy.backend import switch
+from mediapipe.tasks.python.vision import PoseLandmarkerOptions, PoseLandmarker, HandLandmarker
 
 from config.config import CONFIG
 from util.global_logger import GLOBAL_LOGGER as LOG
@@ -55,7 +57,16 @@ def estimate_pose(estimator, image, image_msec):
     return hands_detected
 
 
-def pose_estimation_segmentation(input_video: Path, known_segments: list[tuple[float, float]]) \
+def estimate_hand(estimator, image, image_msec):
+    image = extract_roi(image, CONFIG.ROI_WIDTH, CONFIG.ROI_HEIGHT, CONFIG.ROI_CORNER)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+    result = estimator.detect_for_video(mp_image, image_msec)
+
+    return True if result.hand_landmarks else False
+
+
+def estimation_pipe(input_video: Path, known_segments: list[tuple[float, float]], estimator, estimator_func) \
         -> list[tuple[float, float]]:
     """
     Process input video file with PoseLandmarker and save video segments.
@@ -65,7 +76,7 @@ def pose_estimation_segmentation(input_video: Path, known_segments: list[tuple[f
     """
 
     # estimator is created per video
-    _POSE_ESTIMATOR = PoseLandmarker.create_from_options(_TASK_OPTIONS)
+    _ESTIMATOR = estimator
 
     LOG.info(f'Processing video {input_video}')
     in_vid = cv2.VideoCapture(str(input_video))
@@ -105,7 +116,7 @@ def pose_estimation_segmentation(input_video: Path, known_segments: list[tuple[f
         else:
             continue
 
-        pose_detected = estimate_pose(_POSE_ESTIMATOR, image, int(in_vid.get(cv2.CAP_PROP_POS_MSEC)))
+        pose_detected = estimator_func(_ESTIMATOR, image, int(in_vid.get(cv2.CAP_PROP_POS_MSEC)))
 
         if pose_detected:
             if segment_start is None:
@@ -149,7 +160,18 @@ def load_segments(segments_path: Path) -> list[tuple[float, float]]:
 
 def segment_video(input_video: Path, output_path : Path) -> list[tuple[float, float]]:
     segments = load_segments(output_path)
-    segments = pose_estimation_segmentation(input_video, segments)
+
+    estimator = None
+    estimator_func = None
+
+    if CONFIG.SEGMENTATION_MODE == 'pose':
+        estimator = PoseLandmarker.create_from_options(_TASK_OPTIONS)
+        estimator_func = estimate_pose
+    elif CONFIG.SEGMENTATION_MODE == 'hand':
+        estimator = HandLandmarker.create_from_options(_TASK_OPTIONS)
+        estimator_func = estimate_hand
+
+    segments = estimation_pipe(input_video, segments, estimator, estimator_func)
     save_segments(output_path, segments)
     return segments
 

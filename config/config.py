@@ -22,6 +22,7 @@ class ProjectConfig:
     PERSISTENCE_PATH = 'data/persistence'
     FFMPEG_PATH = 'tools/ffmpeg.exe'
     POSE_TASK_PATH = 'model/pose_landmarker_lite.task'
+    HAND_TASK_PATH = 'model/hand_landmarker.task'
 
     # ----------------------------------------------------  System  ----------------------------------------------------
     SYSTEM_SHUTDOWN_ON_END = False
@@ -30,8 +31,9 @@ class ProjectConfig:
     VIDEO_PROCESSING_LIMIT = 1
     VIDEO_SEGMENT_LIMIT = 10
 
+    SEGMENTATION_MODE = 'hand'  # 'hand', 'pose'
     # ------------------------------------------------  Pose Estimation  -----------------------------------------------
-    POSE_ESTIMATE_FPS = 12
+    POSE_ESTIMATE_FPS = 20
     POSE_ESTIMATION_OPTIONS = {
         'base_options': BaseOptions(
             model_asset_path=POSE_TASK_PATH),
@@ -47,8 +49,20 @@ class ProjectConfig:
     POSE_LANDMARK_VISIBILITY_CRITERIA = 0.8
     POSE_LANDMARK_PRESENCE_CRITERIA = 0.8
 
+    # ------------------------------------------------  Hand Estimation  -----------------------------------------------
+    HAND_ESTIMATE_FPS = 20
+    HAND_ESTIMATION_OPTIONS = {
+        'base_options': BaseOptions(
+            model_asset_path=HAND_TASK_PATH),
+        'running_mode': VisionTaskRunningMode.VIDEO,
+        'num_hands': 2,
+        'min_hand_detection_confidence': 0.5,
+        'min_hand_presence_confidence': 0.5,
+        'min_tracking_confidence': 0.5,
+    }
+
     # ------------------------------------------------  Video Handling  ------------------------------------------------
-    PRE_PADDING_SECONDS = 2.0
+    PRE_PADDING_SECONDS = 1.0
     POST_PADDING_SECONDS = 0.5
 
     ROI_WIDTH = 0.25
