@@ -27,7 +27,12 @@ def main():
         video_out_path.mkdir(parents=True, exist_ok=True)
 
         segments = segment_video(item, video_out_path)
-        save_segments(item, segments, video_out_path)
+
+        if not segments:
+            continue
+
+        if CONFIG.CUT_VIDEO_SEGMENTS:
+            save_segments(item, segments, video_out_path)
 
         limiter_counter += 1
         if limiter_counter >= CONFIG.VIDEO_PROCESSING_LIMIT:

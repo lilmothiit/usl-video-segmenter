@@ -5,15 +5,11 @@ import json
 import mediapipe as mp
 
 from pathlib import Path
-
-from keras.src.legacy.backend import switch
-from mediapipe.tasks.python.vision import PoseLandmarkerOptions, PoseLandmarker, HandLandmarker
+from mediapipe.tasks.python.vision import PoseLandmarkerOptions, PoseLandmarker, HandLandmarkerOptions, HandLandmarker
 
 from config.config import CONFIG
 from util.global_logger import GLOBAL_LOGGER as LOG
 
-
-_TASK_OPTIONS = PoseLandmarkerOptions(**CONFIG.POSE_ESTIMATION_OPTIONS)
 
 _ROI_ANCHORS = {
     "top_left":     (0, 0),
@@ -37,10 +33,15 @@ def extract_roi(img, w_ratio, h_ratio, corner):
     return img[y0:y0 + roi_h, x0:x0 + roi_w]
 
 
-def estimate_pose(estimator, image, image_msec):
+def preprocess_image(image):
     image = extract_roi(image, CONFIG.ROI_WIDTH, CONFIG.ROI_HEIGHT, CONFIG.ROI_CORNER)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+    return mp_image
+
+
+def estimate_pose(estimator, image, image_msec):
+    mp_image = preprocess_image(image)
     result = estimator.detect_for_video(mp_image, image_msec)
 
     if not result.pose_landmarks:
@@ -58,9 +59,7 @@ def estimate_pose(estimator, image, image_msec):
 
 
 def estimate_hand(estimator, image, image_msec):
-    image = extract_roi(image, CONFIG.ROI_WIDTH, CONFIG.ROI_HEIGHT, CONFIG.ROI_CORNER)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+    mp_image = preprocess_image(image)
     result = estimator.detect_for_video(mp_image, image_msec)
 
     return True if result.hand_landmarks else False
@@ -70,6 +69,8 @@ def estimation_pipe(input_video: Path, known_segments: list[tuple[float, float]]
         -> list[tuple[float, float]]:
     """
     Process input video file with PoseLandmarker and save video segments.
+    :param estimator_func: function that preprocesses an image and returns bool based on estimator output
+    :param estimator: a model that can process frames
     :param input_video: path to input video file
     :param known_segments: list of known segments
     :return: list of tuples with (start, end) seconds
@@ -161,17 +162,23 @@ def load_segments(segments_path: Path) -> list[tuple[float, float]]:
 def segment_video(input_video: Path, output_path : Path) -> list[tuple[float, float]]:
     segments = load_segments(output_path)
 
-    estimator = None
-    estimator_func = None
-
     if CONFIG.SEGMENTATION_MODE == 'pose':
-        estimator = PoseLandmarker.create_from_options(_TASK_OPTIONS)
+        task_options = PoseLandmarkerOptions(**CONFIG.POSE_ESTIMATION_OPTIONS)
+        estimator = PoseLandmarker.create_from_options(task_options)
         estimator_func = estimate_pose
     elif CONFIG.SEGMENTATION_MODE == 'hand':
-        estimator = HandLandmarker.create_from_options(_TASK_OPTIONS)
+        task_options = HandLandmarkerOptions(**CONFIG.HAND_ESTIMATION_OPTIONS)
+        estimator = HandLandmarker.create_from_options(task_options)
         estimator_func = estimate_hand
+    else:
+        LOG.error(f"Unknown segmentation mode: {CONFIG.SEGMENTATION_MODE}")
+        return []
 
-    segments = estimation_pipe(input_video, segments, estimator, estimator_func)
+    new_segments = estimation_pipe(input_video, segments, estimator, estimator_func)
+
+    if new_segments == segments:
+        return []
+
     save_segments(output_path, segments)
     return segments
 

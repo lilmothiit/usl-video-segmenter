@@ -28,8 +28,17 @@ class ProjectConfig:
     SYSTEM_SHUTDOWN_ON_END = False
 
     # ===============================================  VIDEO PROCESSING  ===============================================
+    # ------------------------------------------------  Video Handling  ------------------------------------------------
     VIDEO_PROCESSING_LIMIT = 1
     VIDEO_SEGMENT_LIMIT = 10
+    CUT_VIDEO_SEGMENTS = False
+
+    ROI_WIDTH = 0.25
+    ROI_HEIGHT = 0.45
+    ROI_CORNER = 'bottom_right'     # one of ["top_left", "top_right", "bottom_left", "bottom_right"]
+
+    PRE_PADDING_SECONDS = 1.0
+    POST_PADDING_SECONDS = 0.5
 
     SEGMENTATION_MODE = 'hand'  # 'hand', 'pose'
     # ------------------------------------------------  Pose Estimation  -----------------------------------------------
@@ -60,14 +69,6 @@ class ProjectConfig:
         'min_hand_presence_confidence': 0.5,
         'min_tracking_confidence': 0.5,
     }
-
-    # ------------------------------------------------  Video Handling  ------------------------------------------------
-    PRE_PADDING_SECONDS = 1.0
-    POST_PADDING_SECONDS = 0.5
-
-    ROI_WIDTH = 0.25
-    ROI_HEIGHT = 0.45
-    ROI_CORNER = 'bottom_right'     # one of ["top_left", "top_right", "bottom_left", "bottom_right"]
 
 
 CONFIG = ProjectConfig()
