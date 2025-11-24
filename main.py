@@ -8,7 +8,7 @@ from app.ffmpeg_writer import save_segments
 
 
 def main():
-    download_contents = REPATH.DOWNLOAD_DIR.iterdir()
+    download_contents = REPATH.DOWNLOAD_PATH.iterdir()
     if not any(download_contents):
         LOG.error("No content found in data directory.")
 
@@ -23,10 +23,10 @@ def main():
 
         video_name = item.name
         video_id = video_name.split(" - ")[0]
-        video_out_path = REPATH.SEGMENTS_DIR / video_id
+        video_out_path = REPATH.SEGMENTS_PATH / video_id
         video_out_path.mkdir(parents=True, exist_ok=True)
 
-        segments = segment_video(item)
+        segments = segment_video(item, video_out_path)
         save_segments(item, segments, video_out_path)
 
         limiter_counter += 1

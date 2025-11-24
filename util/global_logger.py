@@ -11,7 +11,7 @@ logging.basicConfig(
     format=CONFIG.LOG_FORMAT,
     handlers=[
         RotatingFileHandler(
-            REPATH.LOG_DIR / 'project.log',
+            REPATH.LOG_PATH / 'project.log',
             maxBytes=CONFIG.LOG_FILE_SIZE,
             backupCount=CONFIG.LOG_FILE_COUNT,
             encoding='utf-8'
