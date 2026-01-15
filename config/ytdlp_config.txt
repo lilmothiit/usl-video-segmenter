@@ -1,0 +1,11 @@
+--batch-file config_links.txt
+
+# Download YouTube playlist videos in separate directory indexed by video order in a playlist
+-o "%(playlist)s/%(n_entries+1-playlist_index)d - %(title)s.%(ext)s"
+--windows-filenames 
+
+--write-subs --write-auto-subs
+--sub-format "json/srt/best"
+--sub-langs ".*orig,uk"
+
+--limit-rate 5M

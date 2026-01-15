@@ -1,0 +1,1 @@
+tools/yt-dlp --config-location config/ytdlp_config.txt
