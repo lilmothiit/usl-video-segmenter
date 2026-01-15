@@ -45,7 +45,7 @@ class ProjectConfig:
     SEGMENT_MIN_LENGTH = 10
 
     SEGMENTATION_MODE = 'pose'  # 'hand', 'pose'
-    CHECKPOINT_INTERVAL = 20   # in segments
+    CHECKPOINT_INTERVAL = 20   # how many segments to process between checkpoints
     # ------------------------------------------------  Pose Estimation  -----------------------------------------------
     POSE_ESTIMATE_FPS = 15
     POSE_ESTIMATION_OPTIONS = {
