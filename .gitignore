@@ -1,4 +1,4 @@
-# task file
+# project data files
 data
 model
 logs
@@ -9,3 +9,11 @@ tools
 *.iml
 out
 gen
+
+# temp files
+list_subs.bat
+publish_draft.js
+rename.py
+segment_viewer.py
+sl_speaker_position_test.ipynb
+todo.txt
