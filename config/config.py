@@ -1,4 +1,6 @@
 import logging
+import sys
+
 from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode
 
@@ -29,9 +31,10 @@ class ProjectConfig:
 
     # ===============================================  VIDEO PROCESSING  ===============================================
     # ------------------------------------------------  Video Handling  ------------------------------------------------
-    VIDEO_PROCESSING_LIMIT = 1
-    VIDEO_SEGMENT_LIMIT = 10
-    CUT_VIDEO_SEGMENTS = False
+    PERFORM_SEGMENTATION = False
+    VIDEO_PROCESSING_LIMIT = 15
+    VIDEO_SEGMENT_LIMIT = 12        # sys.maxsize
+    CUT_VIDEO_SEGMENTS = True
 
     ROI_WIDTH = 0.25
     ROI_HEIGHT = 0.45
@@ -39,13 +42,16 @@ class ProjectConfig:
 
     PRE_PADDING_SECONDS = 1.0
     POST_PADDING_SECONDS = 0.5
+    SEGMENT_MIN_LENGTH = 10
 
-    SEGMENTATION_MODE = 'hand'  # 'hand', 'pose'
+    SEGMENTATION_MODE = 'pose'  # 'hand', 'pose'
+    CHECKPOINT_INTERVAL = 20   # in segments
     # ------------------------------------------------  Pose Estimation  -----------------------------------------------
-    POSE_ESTIMATE_FPS = 20
+    POSE_ESTIMATE_FPS = 15
     POSE_ESTIMATION_OPTIONS = {
         'base_options': BaseOptions(
-            model_asset_path=POSE_TASK_PATH),
+            model_asset_path=POSE_TASK_PATH,
+        ),
         'running_mode': VisionTaskRunningMode.VIDEO,
         'num_poses': 1,
         'min_pose_detection_confidence': 0.5,
@@ -55,14 +61,15 @@ class ProjectConfig:
     }
 
     POSE_LANDMARK_CHECKLIST = [15, 16, 17, 18, 19, 20, 21, 22]
-    POSE_LANDMARK_VISIBILITY_CRITERIA = 0.8
-    POSE_LANDMARK_PRESENCE_CRITERIA = 0.8
+    POSE_LANDMARK_VISIBILITY_CRITERIA = 0.9
+    POSE_LANDMARK_PRESENCE_CRITERIA = 0.9
 
     # ------------------------------------------------  Hand Estimation  -----------------------------------------------
     HAND_ESTIMATE_FPS = 20
     HAND_ESTIMATION_OPTIONS = {
         'base_options': BaseOptions(
-            model_asset_path=HAND_TASK_PATH),
+            model_asset_path=HAND_TASK_PATH,
+        ),
         'running_mode': VisionTaskRunningMode.VIDEO,
         'num_hands': 2,
         'min_hand_detection_confidence': 0.5,
