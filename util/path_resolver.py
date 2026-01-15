@@ -1,5 +1,5 @@
 from pathlib import Path
-from config.config import CONFIG
+from config.app_config import CONFIG
 
 
 class PathResolver:

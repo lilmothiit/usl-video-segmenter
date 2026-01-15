@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from config.config import CONFIG
+from config.app_config import CONFIG
 from app.segmenter import save_segments
 
 

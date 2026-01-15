@@ -1,4 +1,4 @@
-from config.config import CONFIG
+from config.app_config import CONFIG
 from util.global_logger import GLOBAL_LOGGER as LOG
 from util.path_resolver import PATH_RESOLVER as REPATH
 from util.shutdown import shutdown

@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from config.config import CONFIG
+from config.app_config import CONFIG
 
 
 def cut_and_save(input_video, output_video, start, end):

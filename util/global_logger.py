@@ -2,7 +2,7 @@ import sys
 import logging
 from logging.handlers import RotatingFileHandler
 
-from config.config import CONFIG
+from config.app_config import CONFIG
 from util.path_resolver import PATH_RESOLVER as REPATH
 
 

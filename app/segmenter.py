@@ -7,7 +7,7 @@ import mediapipe as mp
 from pathlib import Path
 from mediapipe.tasks.python.vision import PoseLandmarkerOptions, PoseLandmarker, HandLandmarkerOptions, HandLandmarker
 
-from config.config import CONFIG
+from config.app_config import CONFIG
 from util.global_logger import GLOBAL_LOGGER as LOG
 
 
