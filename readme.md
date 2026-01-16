@@ -22,17 +22,22 @@ A project for automatic segmentation and cutting/muxing of USL videos.
    pip install -r requirements.txt
    ```
 
-3. Download support tools: yt-dlp, ffmpeg. Place the files in a desired location. Default location is:
+3. Download support tools:
+   - [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+   - [ffmpeg](https://ffmpeg.org/).
+
+4. Place the files in a desired location. Default location is:
     ```
    <Project Root>/tools/
    ```
-4. Download Hand/Pose Landmarker tasks. Place in a desired location. Default location is:
+5. Download [Hand Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker) and/or [Pose Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker) tasks.
+6. Place in a desired location. Default location is:
     ```
    <Project Root>/model/
    ```
 
-5. Configure project in `app_config.py`
-6. Configure download options in `ytdlp_config.txt`
+7. Configure project in `app_config.py`
+8. Configure download options in `ytdlp_config.txt`
 
 ## Usage
 
